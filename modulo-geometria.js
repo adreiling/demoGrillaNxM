@@ -29,8 +29,8 @@
 var superficie3D;
 var mallaDeTriangulos;
 
-var filas=1;
-var columnas=1;
+var filas=20;
+var columnas=20;
 
 
 function crearGeometria(){
@@ -102,17 +102,34 @@ function generarSuperficie(superficie,filas,columnas){
 
     // Buffer de indices de los triángulos
     
-    //indexBuffer=[];  
-    indexBuffer=[0,1,2,2,1,3]; // Estos valores iniciales harcodeados solo dibujan 2 triangulos, REMOVER ESTA LINEA!
+    var indexSize = 0;
+    indexBuffer=[];  
+    //indexBuffer=[0,1,2,2,1,3]; // Estos valores iniciales harcodeados solo dibujan 2 triangulos, REMOVER ESTA LINEA!
 
-    for (i=0; i < filas; i++) {
-        for (j=0; j < columnas; j++) {
+    for (i=0; i < filas-1; i++) {
+        for (j=0; j < columnas-1; j++) {
 
             // completar la lógica necesaria para llenar el indexbuffer en funcion de filas y columnas
             // teniendo en cuenta que se va a dibujar todo el buffer con la primitiva "triangle_strip" 
             
+            indexBuffer[indexSize++] = i * (columnas + 1) + j; //Indice superior izquierdo del quad
+            indexBuffer[indexSize++] = (i + 1) * (columnas + 1) + j; //Indice inferior izquierdo del quad
+
+            // En proxima iteracion se agregan indice superior derecha e indice inferior derecho del quad actual como
+            //  como si fueran los izquierdos del nuevo quad a derecha
         }
-    }
+
+        // Al llegar a la ultima columna completo ultimos 2 triangulos del ultimo quad de esa fila
+        indexBuffer[indexSize++] = i * (columnas + 1) + j;
+        indexBuffer[indexSize++] = (i + 1) * (columnas + 1) + j;
+
+        // Ademas si quedan mas filas repito indice inferior derecho de ultimo quad seguido del indice superior izquierda del primer quad de
+        //  la siguiente fila para no cortar el strip
+        if(i != (filas - 1) ){
+            indexBuffer[indexSize++] = (i + 1) * (columnas + 1) + j;
+            indexBuffer[indexSize++] = (i + 1) * (columnas + 1) + 0;
+        }
+    }   
 
     // Creación e Inicialización de los buffers
 
@@ -169,7 +186,7 @@ function dibujarMalla(mallaDeTriangulos){
         /*
             Aqui es necesario modificar la primitiva por triangle_strip
         */
-        gl.drawElements(gl.TRIANGLES, mallaDeTriangulos.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLE_STRIP, mallaDeTriangulos.webgl_index_buffer.numItems, gl.UNSIGNED_SHORT, 0);
     }
     
     if (modo!="smooth") {
