@@ -29,8 +29,8 @@
 var superficie3D;
 var mallaDeTriangulos;
 
-var filas=20;
-var columnas=20;
+var filas=30;
+var columnas=30;
 
 
 function crearGeometria(){
@@ -64,8 +64,6 @@ function Plano(ancho,largo){
         return [u,v];
     }
 }
-
-
 
 
 function generarSuperficie(superficie,filas,columnas){
@@ -125,11 +123,13 @@ function generarSuperficie(superficie,filas,columnas){
 
         // Ademas si quedan mas filas repito indice inferior derecho de ultimo quad seguido del indice superior izquierda del primer quad de
         //  la siguiente fila para no cortar el strip
-        if(i != (filas - 1) ){
+        if(i != (filas - 2) ){
             indexBuffer[indexSize++] = (i + 1) * (columnas + 1) + j;
             indexBuffer[indexSize++] = (i + 1) * (columnas + 1) + 0;
         }
-    }   
+    } 
+
+
 
     // Creación e Inicialización de los buffers
 
