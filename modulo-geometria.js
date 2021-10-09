@@ -29,20 +29,32 @@
 var superficie3D;
 var mallaDeTriangulos;
 
-var filas=30;
-var columnas=30;
+var filas=100;
+var columnas=100;
 
 
 function crearGeometria(){
         
 
-    superficie3D=new Plano(3,3);
+    if (figura=="plano") {
+        superficie3D=new Plano(3, 3);
+    }        
+    else if (figura=="esfera") {
+        superficie3D=new Esfera(1);
+    }        
+    else if (figura=="tubo senoidal") {
+        superficie3D=new TuboSenoidal(0.05, 0.1, 0.4, 1.2);
+    }    
+    //superficie3D=new Plano(3,3);
+    //superficie3D=new Esfera(3);
+    //superficie3D=new TuboSenoidal(0.05, 0.1, 0.4, 1.2);
+
     mallaDeTriangulos=generarSuperficie(superficie3D,filas,columnas);
     
 }
 
 function dibujarGeometria(){
-
+    
     dibujarMalla(mallaDeTriangulos);
 
 }
@@ -65,6 +77,70 @@ function Plano(ancho,largo){
     }
 }
 
+function Esfera(radio){
+
+    this.getPosicion=function(u,v){
+
+        // Ecuacion de una esfera en el espacio cartesiano
+        // Cada punto en espacio de la superficie de una esfera puede ser definido usando las coordenadas esféricas (r, ϕ, θ) mediante
+        // las siguientes ecuaciones parametricas:        
+        // x = r * sin(theta) * cos(2*phi)
+        // y = r * cos(theta)
+        // z = r * sin(theta) * sin(2*phi)        
+        // En donde r = radio, 0 <= theta <= PI y 0 <= phi <=2*PI
+
+        var x = radio * Math.sin(Math.PI*v) * Math.cos(2*Math.PI*u);
+        var y = radio * Math.cos(Math.PI*v);
+        var z = radio * Math.sin(Math.PI*v) * Math.sin(2*Math.PI*u);
+        
+        return [x,y,z];
+    }
+
+    this.getNormal=function(u,v){
+        
+        var position = this.getPosicion(u,v);
+        return [position.x, position.y, position.z];
+    }
+
+    this.getCoordenadasTextura=function(u,v){
+        
+        return [u,v];
+    }    
+}
+
+
+function TuboSenoidal(amplitudDeOnda, longitudDeOnda, radio, altura){
+    
+    this.getPosicion=function(u,v){
+
+        // Ecuacion de un cilindro liso en el espacio cartesiano:
+        // x = r * cos(2*PI*u)
+        // y = v / h
+        // z = r * sin(2*PI*u)       
+        // En donde r = radio, h = altura
+
+        // Considerando la senoide, se modula el radio (con valor maximo amplitudDeOnda) segun el valor del parametro v:
+        var x = Math.cos(2*Math.PI*u) * (radio + amplitudDeOnda*Math.sin(2*Math.PI/longitudDeOnda*v));
+        var y = (v - 0.5) * altura;        
+        var z = Math.sin(2*Math.PI*u) * (radio + amplitudDeOnda*Math.sin(2*Math.PI/longitudDeOnda*v));
+        
+        return [x,y,z];
+    }
+
+    this.getNormal=function(u,v){
+        
+        var delta = 0.01;        
+        var v1 = this.getPosicion(u + delta, v);
+        var v2 = this.getPosicion(u, v + delta);
+
+        return glMatrix.vec3.cross([],v1,v2);
+    }
+
+    this.getCoordenadasTextura=function(u,v){
+        
+        return [u,v];
+    }
+}
 
 function generarSuperficie(superficie,filas,columnas){
     
@@ -104,8 +180,8 @@ function generarSuperficie(superficie,filas,columnas){
     indexBuffer=[];  
     //indexBuffer=[0,1,2,2,1,3]; // Estos valores iniciales harcodeados solo dibujan 2 triangulos, REMOVER ESTA LINEA!
 
-    for (i=0; i < filas-1; i++) {
-        for (j=0; j < columnas-1; j++) {
+    for (i=0; i < filas; i++) {
+        for (j=0; j < columnas; j++) {
 
             // completar la lógica necesaria para llenar el indexbuffer en funcion de filas y columnas
             // teniendo en cuenta que se va a dibujar todo el buffer con la primitiva "triangle_strip" 
@@ -123,7 +199,7 @@ function generarSuperficie(superficie,filas,columnas){
 
         // Ademas si quedan mas filas repito indice inferior derecho de ultimo quad seguido del indice superior izquierda del primer quad de
         //  la siguiente fila para no cortar el strip
-        if(i != (filas - 2) ){
+        if(i != (filas - 1) ){
             indexBuffer[indexSize++] = (i + 1) * (columnas + 1) + j;
             indexBuffer[indexSize++] = (i + 1) * (columnas + 1) + 0;
         }
