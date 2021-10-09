@@ -51,6 +51,8 @@
         var distanciaCamara=3;
         var alturaCamara=2;
         var velocidadAngular=0.15;
+
+        var figura="plano";
         
         var lighting="true";
 
@@ -242,9 +244,12 @@
             gui.add(window, "alturaCamara",-4,4).step(0.01);;
             gui.add(window, "modo",["wireframe","smooth","edges"]);
             gui.add(window, "velocidadAngular",0, 1).step(0.01);
-            
-            
-        }
+            var selectorSuperficie =gui.add(window, "figura",["plano","esfera","tubo senoidal"]);
+
+            selectorSuperficie.onChange(function (value) {
+              crearGeometria();
+            });            
+        }        
 
         function webGLStart() {
             var canvas = document.getElementById("myCanvas");
